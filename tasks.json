@@ -1,0 +1,342 @@
+[
+  {
+    "rules": [
+      "Always create a separate function to render HTML files — do NOT render directly from API functions.",
+      "APIs should return JSON responses only. Use separate view functions for HTML rendering.",
+      "Do NOT write or repeat basic template code like generic 'hello world' or route setups.",
+      "Do NOT summarize or skip code logic. Always be precise and detailed.",
+      "Always check if the code already exists before writing anything new. No duplication.",
+      "Do NOT overwrite or rewrite existing code unless explicitly instructed.",
+      "Avoid general-purpose code. Every piece of code should be specific to the current project structure and use case.",
+      "Use exact folder structure and respect the design pattern established in previous files.",
+      "Never write placeholder comments like 'to be implemented' or 'to be added'. Always provide complete production ready implementations.",
+      "Always for templates use inline html css for screens like for 1 screen i want 1 html file that have css and js for that screen except global files",
+      "Always use tailwind css for styling",
+      "Always use CMD for run the commands for any task",
+      "Always use MCP tool to see the database and always see the database related tables, columns or data if table have any data when you make APIS",
+      "Always use the latest version of the code and always use the latest version of the code when you make any changes"
+    ]
+  },
+  {
+    "id": 1,
+    "phase": "Phase 1: Setup",
+    "category": "System Setup",
+    "role": "system",
+    "subtask": "Initialize FastAPI project with recommended folder structure (/app/routes, /models, /templates, /static, /schemas). Configure PostgreSQL connection using SQLAlchemy. Create .env for secret keys and DB credentials. Create a virtual environment with python3.13 ('C:\\Users\\dell\\AppData\\Local\\Programs\\Python\\Python313\\python.exe') and than start working"
+  },
+  {
+    "id": 2,
+    "phase": "Phase 1: Setup",
+    "category": "Frontend Boilerplate",
+    "role": "system",
+    "subtask": "Create global base.html layout file with: Top navbar (logo, navigation menu, user profile dropdown), sidebar for role-based navigation, main content area with breadcrumbs, footer with links. Include responsive mobile hamburger menu, notification bell icon, search bar in header. Setup CSS variables for theme colors (primary: #2563eb, secondary: #10b981, accent: #f59e0b, danger: #ef4444). Include global JavaScript for modal handling, form validation, and AJAX requests."
+  },
+  {
+    "id": 4,
+    "phase": "Phase 2: Auth & Profiles",
+    "category": "Authentication APIs",
+    "role": "all",
+    "subtask": "BUILD AUTHENTICATION APIS: POST /api/auth/register - accepts {role, full_name, email, phone, password, terms_accepted}, returns {user_id, verification_required}. POST /api/auth/verify-otp - accepts {user_id, otp_code, verification_type}, returns {access_token, refresh_token, user_profile}. POST /api/auth/login - accepts {email_or_phone, password}, supports both email/phone login, returns {access_token, refresh_token, user_profile, role}. POST /api/auth/login-otp - sends OTP to phone/email, accepts {contact}, returns {otp_sent, expires_in}. POST /api/auth/social-login - accepts {provider, token}, supports Google/Apple OAuth. POST /api/auth/logout - invalidates current session. GET /api/auth/me - returns current user profile with role permissions. POST /api/auth/refresh-token - accepts refresh token, returns new access token. POST /api/auth/forgot-password - sends reset link/OTP. POST /api/auth/reset-password - accepts {reset_token, new_password}."
+  },
+  {
+    "id": 5,
+    "phase": "Phase 2: Auth & Profiles",
+    "category": "Profile UI & APIs",
+    "role": "patient, doctor",
+    "subtask": "CREATE REGISTER PAGE: Split-screen layout with left side showing medical imagery/testimonials, right side with registration form. Form includes: role selection (Patient/Doctor), full name, email, phone, password fields with real-time validation. Social login buttons (Google, Apple). Terms checkbox. OTP verification modal popup. CREATE LOGIN PAGE: Minimalist centered form with logo, email/phone input, password field, 'Remember me' checkbox, forgot password link. OTP login option toggle. Success redirects to role-based dashboard. CREATE PROFILE PAGES: Tabbed interface with 'Personal Info', 'Medical History' (patients), 'Professional Info' (doctors), 'Security Settings'. Profile picture upload with crop functionality. Breadcrumb navigation. Save/Cancel buttons with unsaved changes warning modal. PROFILE APIS: GET /api/profile/me - returns complete user profile based on role. PUT /api/profile/update - accepts profile updates, validates role-specific fields. POST /api/profile/upload-avatar - handles image upload with cropping data. GET /api/profile/medical-history - patient medical timeline. PUT /api/profile/medical-history - update patient medical info. GET /api/profile/professional-info - doctor credentials, specialties, experience. PUT /api/profile/professional-info - update doctor professional details."
+  },
+  {
+    "id": 6,
+    "phase": "Phase 3: Clinic & Doctor Setup",
+    "category": "Doctor Management APIs",
+    "role": "doctor, clinic_admin",
+    "subtask": "BUILD DOCTOR MANAGEMENT APIS: GET /api/doctors - returns paginated doctor list with filters (specialty, location, rating), supports search query. GET /api/doctors/{doctor_id} - returns complete doctor profile with availability, reviews, clinics. PUT /api/doctors/{doctor_id} - update doctor profile (only by doctor or admin). POST /api/doctors/{doctor_id}/specialties - add specialty to doctor. DELETE /api/doctors/{doctor_id}/specialties/{specialty_id} - remove specialty. GET /api/doctors/{doctor_id}/availability - returns weekly schedule template. PUT /api/doctors/{doctor_id}/availability - update availability schedule with time slots. POST /api/doctors/{doctor_id}/clinics - link doctor to clinic. DELETE /api/doctors/{doctor_id}/clinics/{clinic_id} - unlink from clinic. PUT /api/doctors/{doctor_id}/telemedicine-settings - enable/disable telemedicine with preferences. GET /api/doctors/{doctor_id}/stats - appointment count, rating average, revenue metrics."
+  },
+  {
+    "id": 7,
+    "phase": "Phase 3: Clinic & Doctor Setup",
+    "category": "Clinic Management UI & APIs",
+    "role": "clinic_admin",
+    "subtask": "CREATE CLINIC MANAGEMENT DASHBOARD: Header with clinic name and logo, stats cards (total doctors, today's appointments, revenue). Main content area with tabs: 'Clinic Profile', 'Doctors', 'Schedule', 'Settings'. CLINIC PROFILE TAB: Form with clinic name, address with map integration, contact details, services offered (checkboxes), operating hours with time pickers, image gallery upload. DOCTORS TAB: Table with doctor cards showing photo, name, specialty, status (active/inactive), action buttons (edit, view schedule, deactivate). Add doctor button opens modal form. SCHEDULE TAB: Calendar view with color-coded appointments by doctor, week/month toggle, drag-drop rescheduling capability. CLINIC APIS: POST /api/clinics - create new clinic with admin assignment. GET /api/clinics/{clinic_id} - complete clinic details with stats. PUT /api/clinics/{clinic_id} - update clinic information. POST /api/clinics/{clinic_id}/doctors - assign doctor to clinic. DELETE /api/clinics/{clinic_id}/doctors/{doctor_id} - remove doctor assignment. GET /api/clinics/{clinic_id}/schedule - clinic-wide appointment calendar. PUT /api/clinics/{clinic_id}/schedule/{appointment_id} - reschedule appointment. GET /api/clinics/{clinic_id}/analytics - revenue, appointment trends, doctor performance. POST /api/clinics/{clinic_id}/gallery - upload clinic images. GET /api/clinics/search - search clinics by location, services, ratings."
+  },
+  {
+    "id": 8,
+    "phase": "Phase 4: Doctor Discovery",
+    "category": "Doctor Search APIs",
+    "role": "patient",
+    "subtask": "BUILD DOCTOR DISCOVERY APIS: GET /api/doctors/search - advanced search with filters: {specialty, location, language, min_rating, consultation_type, availability_date, experience_years, consultation_fee_range, insurance_accepted}. Returns paginated results with doctor cards data. GET /api/doctors/nearby - location-based search using coordinates, returns doctors within radius. GET /api/doctors/specialties - returns all available specialties with doctor count. GET /api/doctors/languages - available languages filter. GET /api/doctors/{doctor_id}/availability-slots - returns available time slots for next 30 days. GET /api/doctors/{doctor_id}/reviews - paginated patient reviews with ratings. POST /api/doctors/{doctor_id}/favorite - add/remove from patient favorites. GET /api/patients/{patient_id}/favorite-doctors - patient's saved doctors list. GET /api/doctors/trending - most booked doctors this week. GET /api/doctors/filters - dynamic filter options based on location/specialty selection."
+  },
+  {
+    "id": 9,
+    "phase": "Phase 4: Doctor Discovery",
+    "category": "Doctor Search UI",
+    "role": "patient",
+    "subtask": "CREATE DOCTOR DISCOVERY PAGE: Top search bar with location autocomplete and specialty dropdown. Filter sidebar with: specialties (multi-select), rating (star filter), consultation type (in-person/telemedicine toggles), languages, experience range slider, availability (today/this week/anytime). Main area shows doctor cards in grid/list view toggle. DOCTOR CARDS: Photo, name, specialty, rating stars, experience years, clinic name, next available slot, consultation fee, 'Book Now' and 'View Profile' buttons. Favorite heart icon. DOCTOR PROFILE MODAL/PAGE: Hero section with doctor photo, name, specialty, rating. Tabs for 'About' (bio, education, certifications), 'Reviews' (patient testimonials with ratings), 'Availability' (calendar widget), 'Clinic Info'. Floating 'Book Appointment' button."
+  },
+  {
+    "id": 10,
+    "phase": "Phase 5: Appointment Scheduling",
+    "category": "Appointment APIs",
+    "role": "patient, doctor, clinic_admin",
+    "subtask": "BUILD APPOINTMENT MANAGEMENT APIS: POST /api/appointments - create appointment with {doctor_id, patient_id, appointment_date, time_slot, consultation_type, reason, consultation_mode}. GET /api/appointments/{appointment_id} - detailed appointment info. PUT /api/appointments/{appointment_id} - update appointment details. DELETE /api/appointments/{appointment_id} - cancel appointment with reason. POST /api/appointments/{appointment_id}/reschedule - reschedule with new date/time. GET /api/patients/{patient_id}/appointments - patient's appointment history with status filters. GET /api/doctors/{doctor_id}/appointments - doctor's appointment schedule with date range. GET /api/appointments/slots-availability - check slot availability for doctor/date combination. POST /api/appointments/{appointment_id}/confirm - doctor confirms appointment. POST /api/appointments/{appointment_id}/complete - mark appointment as completed. GET /api/appointments/upcoming - next appointments for current user. POST /api/appointments/{appointment_id}/notes - add consultation notes (doctor only). GET /api/clinics/{clinic_id}/appointments - clinic's daily appointment schedule."
+  },
+  {
+    "id": 11,
+    "phase": "Phase 5: Appointment Scheduling",
+    "category": "Appointment UI",
+    "role": "patient, doctor",
+    "subtask": "CREATE APPOINTMENT BOOKING FLOW: Step 1 - Doctor selection with search functionality. Step 2 - Date/time picker with available slots highlighted in green, unavailable in gray. Step 3 - Appointment type selection (consultation/follow-up), consultation mode (in-person/telemedicine). Step 4 - Patient details form, reason for visit, insurance info. Step 5 - Payment method selection. Confirmation page with appointment details and calendar add button. CREATE PATIENT APPOINTMENT DASHBOARD: Filter tabs (Upcoming, Completed, Cancelled). Appointment cards showing date/time, doctor info, status badges, action buttons (reschedule, cancel, join call, view prescription). CREATE DOCTOR APPOINTMENT VIEW: Calendar interface with day/week/month views. Appointment blocks showing patient name, time, consultation type. Click opens patient info sidebar with medical history, previous visits, notes section."
+  },
+  {
+    "id": 12,
+    "phase": "Phase 6: Telemedicine",
+    "category": "Video Call APIs",
+    "role": "patient, doctor",
+    "subtask": "BUILD TELEMEDICINE APIS: POST /api/telemedicine/sessions - create video session for appointment, returns room_id and access_tokens. GET /api/telemedicine/sessions/{session_id} - session details and participant info. PUT /api/telemedicine/sessions/{session_id}/join - user joins session, returns WebRTC configuration. PUT /api/telemedicine/sessions/{session_id}/leave - user leaves session. DELETE /api/telemedicine/sessions/{session_id} - end session (doctor only). GET /api/telemedicine/sessions/{session_id}/status - current session status and participants. POST /api/telemedicine/sessions/{session_id}/recording/start - start session recording. POST /api/telemedicine/sessions/{session_id}/recording/stop - stop recording. GET /api/telemedicine/test-connection - WebRTC connection test endpoint. POST /api/telemedicine/sessions/{session_id}/screen-share - initiate screen sharing. POST /api/telemedicine/sessions/{session_id}/invite - send session invite to participant."
+  },
+  {
+    "id": 13,
+    "phase": "Phase 6: Telemedicine",
+    "category": "Telemedicine UI",
+    "role": "patient, doctor",
+    "subtask": "CREATE TELEMEDICINE CONSULTATION ROOM: Split-screen layout with main video area (doctor on left, patient on right), controls bar at bottom (mute, camera toggle, screen share, end call buttons). Right sidebar with: patient info card, chat panel (collapsible), notes section (doctor only), prescription pad (doctor only), file sharing area. Pre-call lobby with connection test, device permissions, waiting room message. Post-call feedback modal with rating and summary. Mobile-responsive design with full-screen video option."
+  },
+  {
+    "id": 14,
+    "phase": "Phase 7: Notifications",
+    "category": "Notification APIs",
+    "role": "all",
+    "subtask": "BUILD NOTIFICATION SYSTEM APIS: POST /api/notifications/send - send notification with {user_id, type, title, message, channels: [email, sms, push]}. GET /api/notifications/{user_id} - user's notification history with pagination. PUT /api/notifications/{notification_id}/read - mark notification as read. PUT /api/notifications/mark-all-read - mark all notifications as read. GET /api/notifications/unread-count - count of unread notifications. POST /api/notifications/appointment-reminder - schedule appointment reminders. POST /api/notifications/email - send email notification. POST /api/notifications/sms - send SMS notification. GET /api/notifications/templates - notification templates for different events. PUT /api/notifications/preferences - update user notification preferences. GET /api/notifications/delivery-status/{notification_id} - check delivery status of sent notification."
+  },
+  {
+    "id": 15,
+    "phase": "Phase 7: Notifications",
+    "category": "Notification UI",
+    "role": "system",
+    "subtask": "CREATE NOTIFICATION CENTER: Bell icon in header with notification count badge. Dropdown panel showing recent notifications with icons, timestamps, read/unread status. Categories: appointments, messages, system updates. Mark all as read button. CREATE NOTIFICATION SETTINGS PAGE: Toggle switches for notification types (email, SMS, push), frequency settings (immediate, daily digest, weekly), quiet hours time picker. Communication preferences section with contact method priorities."
+  },
+  {
+    "id": 16,
+    "phase": "Phase 8: EHR",
+    "category": "Health Records APIs",
+    "role": "patient, doctor",
+    "subtask": "BUILD EHR MANAGEMENT APIS: POST /api/ehr/documents - upload medical document with {patient_id, document_type, file, visit_id, doctor_id}. GET /api/ehr/patients/{patient_id}/documents - retrieve patient's complete medical record timeline. GET /api/ehr/documents/{document_id} - get specific document with access control. DELETE /api/ehr/documents/{document_id} - delete document (patient/doctor only). POST /api/ehr/visits - create visit record with {patient_id, doctor_id, visit_date, diagnosis, treatment, prescription}. GET /api/ehr/visits/{visit_id} - detailed visit information. PUT /api/ehr/visits/{visit_id} - update visit notes (doctor only). POST /api/ehr/prescriptions - create prescription record. GET /api/ehr/patients/{patient_id}/timeline - chronological medical history. POST /api/ehr/share - share medical records with specified doctor. GET /api/ehr/shared-with-me - records shared with current doctor. PUT /api/ehr/documents/{document_id}/permissions - manage document access permissions."
+  },
+  {
+    "id": 17,
+    "phase": "Phase 8: EHR",
+    "category": "Health Records UI",
+    "role": "patient, doctor",
+    "subtask": "CREATE PATIENT EHR DASHBOARD: Timeline view of medical history with expandable cards for each visit. Filter options by date range, doctor, visit type. Document library with categorized folders (prescriptions, lab reports, imaging). Upload zone with drag-drop functionality. CREATE DOCTOR EHR VIEW: Patient search bar, selected patient's complete medical timeline, add new visit notes form with templates, prescription generator with drug database search, vital signs tracker with charts. Document viewer with annotation tools. Privacy controls showing who has access."
+  },
+  {
+    "id": 18,
+    "phase": "Phase 9: Messaging",
+    "category": "Chat APIs",
+    "role": "patient, doctor",
+    "subtask": "BUILD REAL-TIME MESSAGING APIS: POST /api/chat/conversations - create new conversation between patient and doctor. GET /api/chat/conversations - list user's conversations with last message preview. GET /api/chat/conversations/{conversation_id}/messages - retrieve conversation messages with pagination. POST /api/chat/conversations/{conversation_id}/messages - send new message with {content, message_type: [text, image, document, voice]}. PUT /api/chat/messages/{message_id}/read - mark message as read. GET /api/chat/conversations/{conversation_id}/participants - conversation participants info. POST /api/chat/messages/{message_id}/attachment - upload file attachment. DELETE /api/chat/messages/{message_id} - delete message (sender only). GET /api/chat/search - search messages across conversations. WebSocket /ws/chat/{conversation_id} - real-time message updates. POST /api/chat/conversations/{conversation_id}/typing - typing indicator. GET /api/chat/unread-count - total unread messages count."
+  },
+  {
+    "id": 19,
+    "phase": "Phase 9: Messaging",
+    "category": "Chat UI",
+    "role": "patient, doctor",
+    "subtask": "CREATE MESSAGING INTERFACE: WhatsApp-style chat layout with conversation list on left, active chat on right. Message bubbles with sender identification, timestamps, delivery status indicators. File attachment button with preview for images/documents. Emoji picker, voice message recording button. Online/offline status indicators. Message search functionality. Separate chat rooms for each consultation session with automatic history archiving."
+  },
+  {
+    "id": 20,
+    "phase": "Phase 10: Feedback",
+    "category": "Rating APIs",
+    "role": "patient",
+    "subtask": "BUILD FEEDBACK SYSTEM APIS: POST /api/feedback/appointments/{appointment_id} - submit appointment feedback with {rating, communication_rating, punctuality_rating, expertise_rating, overall_rating, comments, anonymous}. GET /api/feedback/doctors/{doctor_id} - retrieve doctor's feedback summary and reviews. GET /api/feedback/appointments/{appointment_id} - get existing feedback for appointment. PUT /api/feedback/{feedback_id} - update feedback (within 24 hours). DELETE /api/feedback/{feedback_id} - delete feedback (patient only). GET /api/feedback/patients/{patient_id}/given - feedback given by patient. GET /api/feedback/statistics/{doctor_id} - detailed rating statistics and trends. POST /api/feedback/report - report inappropriate feedback. GET /api/feedback/pending - appointments pending feedback for current patient."
+  },
+  {
+    "id": 21,
+    "phase": "Phase 10: Feedback",
+    "category": "Feedback UI",
+    "role": "patient",
+    "subtask": "CREATE FEEDBACK MODAL: Appears automatically post-consultation or accessible from appointment history. 5-star rating system with categories (communication, punctuality, expertise, overall experience). Text area for detailed comments with character counter. Anonymous feedback option checkbox. 'Submit' and 'Skip' buttons. Thank you confirmation with option to book follow-up. CREATE REVIEW DISPLAY: On doctor profiles, show average rating prominently, review cards with patient initials, rating stars, date, and comment excerpts. 'Load more reviews' pagination."
+  },
+  {
+    "id": 22,
+    "phase": "Phase 11: Admin Dashboard",
+    "category": "Admin APIs",
+    "role": "sys_admin",
+    "subtask": "BUILD ADMIN MANAGEMENT APIS: GET /api/admin/dashboard-stats - system-wide KPIs (total users, appointments, revenue, active sessions). GET /api/admin/users - paginated user list with filters (role, status, registration_date). PUT /api/admin/users/{user_id}/status - activate/deactivate user account. GET /api/admin/doctors - doctor management with verification status. PUT /api/admin/doctors/{doctor_id}/verify - verify doctor credentials. GET /api/admin/clinics - clinic management and approval. PUT /api/admin/clinics/{clinic_id}/approve - approve clinic registration. GET /api/admin/appointments - system-wide appointment overview. GET /api/admin/analytics/revenue - revenue analytics with date filters. GET /api/admin/analytics/user-growth - user registration trends. GET /api/admin/feedback/reported - reported feedback items for moderation. PUT /api/admin/feedback/{feedback_id}/moderate - moderate reported feedback. GET /api/admin/system-health - system performance metrics. POST /api/admin/announcements - create system announcements."
+  },
+  {
+    "id": 23,
+    "phase": "Phase 11: Admin Dashboard",
+    "category": "Admin UI",
+    "role": "sys_admin",
+    "subtask": "CREATE ADMIN DASHBOARD: Header with system logo, admin profile, logout. Sidebar navigation with icons: Dashboard, Users, Doctors, Clinics, Appointments, Analytics, Settings. MAIN DASHBOARD: KPI cards (total users, active appointments, revenue, system health). Charts section with appointment trends, user growth, revenue analytics. Recent activity feed. MANAGEMENT TABLES: Sortable columns, search functionality, pagination, bulk actions, status filters. User table with role badges, last login, action buttons (view, edit, suspend). Export functionality for reports. Modal forms for quick edits."
+  },
+  {
+    "id": 24,
+    "phase": "Phase 12: Payments",
+    "category": "Payment APIs",
+    "role": "patient",
+    "subtask": "BUILD RAZORPAY PAYMENT PROCESSING APIS: POST /api/payments/orders - create Razorpay order for appointment with {appointment_id, amount, currency, receipt}. Returns {order_id, razorpay_order_id, amount, currency}. POST /api/payments/verify - verify payment signature with {razorpay_payment_id, razorpay_order_id, razorpay_signature}. Returns {status, payment_id}. GET /api/payments/{payment_id} - retrieve payment details and status. POST /api/payments/capture - capture payment with {razorpay_payment_id, amount}. Returns {status, payment_id}. POST /api/payments/refund - process refund for cancelled appointment with {payment_id, amount, reason}. Returns {refund_id, status}. GET /api/payments/history - user's payment history with filters {date_range, status}. GET /api/payments/invoices/{payment_id} - generate downloadable invoice PDF. POST /api/payments/webhook - handle Razorpay webhook events (payment.captured, payment.failed, refund.processed) with HMAC-SHA256 signature validation. Returns {status}. GET /api/payments/methods - available payment methods (cards, UPI, netbanking, wallet). POST /api/payments/methods - add new payment method for saved cards. DELETE /api/payments/methods/{method_id} - remove saved payment method. POST /api/payments/test-mode - simulate test mode payment for Razorpay sandbox. Returns {test_payment_id, status}."
+  },
+  {
+    "id": 25,
+    "phase": "Phase 12: Payments",
+    "category": "Billing UI",
+    "role": "patient",
+    "subtask": "CREATE PAYMENT CHECKOUT PAGE: Appointment summary card with doctor name, specialty, date/time, consultation fee breakdown (base fee, taxes, total). Payment method selection (cards, UPI, netbanking, wallet) using Razorpay checkout.js. Card input form with real-time validation (card number, expiry, CVV) and security badges (PCI DSS, Razorpay trust). Order summary with taxes and total. Secure payment processing with loading spinner and error handling. SUCCESS PAGE: Confirmation message with payment ID, appointment details, 'Download Receipt' button, 'Book Another Appointment' link. BILLING HISTORY PAGE: Table with columns for date, doctor, amount, status (success, failed, refunded), payment method, invoice download link. Responsive design with Tailwind CSS. Inline JavaScript for Razorpay checkout.js integration and webhook status updates."
+  },
+  {
+    "id": 26,
+    "phase": "Phase 13: Multi-Language",
+    "category": "Localization APIs",
+    "role": "all",
+    "subtask": "BUILD LOCALIZATION APIS: GET /api/i18n/languages - available languages with locale codes. GET /api/i18n/translations/{locale} - translation strings for specified locale. PUT /api/users/language-preference - update user's preferred language. GET /api/i18n/regions/{locale}/date-formats - locale-specific date/time formats. GET /api/i18n/regions/{locale}/currency - currency formatting for locale. POST /api/i18n/missing-translations - report missing translation keys. GET /api/i18n/regions/{locale}/cultural-settings - cultural preferences (colors, imagery, RTL support)."
+  },
+  {
+    "id": 27,
+    "phase": "Phase 13: Multi-Language",
+    "category": "Localization UI",
+    "role": "all",
+    "subtask": "CREATE LANGUAGE SWITCHER: Dropdown in header with flag icons and language names. Implements RTL support for Arabic/Hebrew. All text elements use translation keys. Date/time formatting based on locale. Currency formatting for payments. Cultural adaptation for color schemes and imagery."
+  },
+  {
+    "id": 28,
+    "phase": "Phase 14: AI Assistant",
+    "category": "AI APIs",
+    "role": "patient",
+    "subtask": "BUILD AI ASSISTANT APIS: POST /api/ai/symptom-analysis - analyze symptoms with {symptoms, duration, severity, age, gender, medical_history}. Returns preliminary assessment and specialist recommendations. POST /api/ai/chat - conversational AI interface for symptom gathering. GET /api/ai/chat/history/{session_id} - retrieve chat session history. POST /api/ai/triage - AI-powered triage with urgency level determination. GET /api/ai/specialties/recommended - get recommended specialists based on symptoms. POST /api/ai/follow-up-questions - generate follow-up questions based on initial symptoms. GET /api/ai/health-tips - personalized health tips based on user profile. POST /api/ai/medication-interactions - check for drug interactions. GET /api/ai/emergency-protocols - emergency response protocols for severe symptoms."
+  },
+  {
+    "id": 29,
+    "phase": "Phase 14: AI Assistant",
+    "category": "AI UI",
+    "role": "patient",
+    "subtask": "CREATE AI HEALTH ASSISTANT: Floating chat bubble on patient dashboard. Chat interface with AI avatar, conversational flow for symptom gathering. Multi-step questionnaire with visual body diagram for symptom location. Severity slider, duration picker, associated symptoms checklist. AI provides preliminary assessment with disclaimer, recommends suitable specialists, suggests urgency level (immediate, same day, within week). Option to directly book with recommended doctors."
+  },
+  {
+    "id": 30,
+    "phase": "Phase 15: Labs & Pharmacy",
+    "category": "Lab Integration APIs",
+    "role": "patient",
+    "subtask": "BUILD LAB SERVICE APIS: GET /api/labs/nearby - find labs near user location with ratings and services. GET /api/labs/{lab_id}/tests - available tests with pricing and preparation instructions. POST /api/labs/bookings - book lab appointment with {lab_id, test_ids, appointment_date, home_collection}. GET /api/labs/bookings/{booking_id} - booking details and status. PUT /api/labs/bookings/{booking_id}/reschedule - reschedule lab appointment. POST /api/labs/reports/upload - upload lab report (lab partner API). GET /api/labs/reports/{patient_id} - patient's lab reports with sharing permissions. POST /api/labs/reports/share - share report with doctor. GET /api/labs/tests/categories - test categories and popular tests. POST /api/labs/home-collection - request home sample collection."
+  },
+  {
+    "id": 31,
+    "phase": "Phase 15: Labs & Pharmacy",
+    "category": "Lab Integration UI",
+    "role": "patient",
+    "subtask": "CREATE LAB BOOKING INTERFACE: Search for nearby labs with ratings and pricing. Test catalog with categories, descriptions, preparation instructions. Appointment scheduling with home collection option. Lab report repository with secure viewing and sharing options. Integration with doctor prescriptions for automatic test ordering."
+  },
+  {
+    "id": 32,
+    "phase": "Phase 15: Labs & Pharmacy",
+    "category": "Pharmacy APIs",
+    "role": "patient",
+    "subtask": "BUILD PHARMACY SERVICE APIS: POST /api/pharmacy/prescriptions/upload - upload prescription with OCR processing. GET /api/pharmacy/medicines/search - search medicines with generic alternatives. POST /api/pharmacy/cart/add - add medicines to cart with prescription verification. GET /api/pharmacy/cart - cart contents with total and pharmacy options. POST /api/pharmacy/orders - place medicine order with delivery preferences. GET /api/pharmacy/orders/{order_id}/track - real-time delivery tracking. GET /api/pharmacy/nearby - find nearby pharmacies with availability. POST /api/pharmacy/reminders - set medication reminders. GET /api/pharmacy/reminders - user's medication reminder schedule. PUT /api/pharmacy/reminders/{reminder_id} - update reminder settings."
+  },
+  {
+    "id": 33,
+    "phase": "Phase 15: Labs & Pharmacy",
+    "category": "Medicine Ordering UI",
+    "role": "patient",
+    "subtask": "CREATE PHARMACY SECTION: Prescription upload with OCR text recognition. Medicine search with generic alternatives. Shopping cart with prescription verification. Pharmacy partner selection based on location and availability. Delivery tracking with real-time updates. Pill reminder setup with notification scheduling."
+  },
+  {
+    "id": 34,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Session Management APIs",
+    "role": "all",
+    "subtask": "BUILD SESSION MANAGEMENT APIS: POST /api/auth/sessions - create new session with JWT token. GET /api/auth/sessions/validate - validate current session token. DELETE /api/auth/sessions/{session_id} - logout and invalidate session. GET /api/auth/sessions/active - list user's active sessions across devices. DELETE /api/auth/sessions/all - logout from all devices. PUT /api/auth/sessions/refresh - refresh session token. POST /api/auth/sessions/activity - log session activity. GET /api/auth/permissions - get role-based permissions for current session. POST /api/auth/2fa/setup - setup two-factor authentication. POST /api/auth/2fa/verify - verify 2FA token."
+  },
+  {
+    "id": 35,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "OTP & Multi-Factor APIs",
+    "role": "all",
+    "subtask": "BUILD OTP SYSTEM APIS: POST /api/otp/generate - generate OTP for phone/email with {contact, purpose}. POST /api/otp/verify - verify OTP code with attempt tracking. POST /api/otp/resend - resend OTP with rate limiting. GET /api/otp/status/{otp_id} - check OTP validity and attempts. POST /api/mfa/biometric/register - register biometric authentication. POST /api/mfa/biometric/verify - verify biometric login. POST /api/mfa/backup-codes/generate - generate backup recovery codes. POST /api/mfa/backup-codes/verify - verify backup code usage."
+  },
+  {
+    "id": 36,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "OTP & Multi-Factor UI",
+    "role": "all",
+    "subtask": "CREATE OTP VERIFICATION SCREEN: Clean modal with OTP input boxes, resend timer, alternative contact method option. Biometric authentication option on supported devices. Backup code entry for account recovery."
+  },
+  {
+    "id": 37,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "File Upload APIs",
+    "role": "patient, doctor",
+    "subtask": "BUILD SECURE FILE UPLOAD APIS: POST /api/files/upload - secure file upload with {file, file_type, associated_record_id, permissions}. Supports virus scanning and format validation. GET /api/files/{file_id} - retrieve file with access control. DELETE /api/files/{file_id} - delete file with permission check. PUT /api/files/{file_id}/permissions - update file access permissions. GET /api/files/metadata/{file_id} - file metadata without content. POST /api/files/scan-result - receive virus scan results. GET /api/files/types-allowed - allowed file types and size limits. POST /api/files/bulk-upload - upload multiple files with progress tracking."
+  },
+  {
+    "id": 38,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "File Upload UI",
+    "role": "patient, doctor",
+    "subtask": "CREATE SECURE UPLOAD INTERFACE: Drag-drop zone with file type validation display. Progress bar with upload status. File preview with security scan results. Encrypted storage indicator with access permission display."
+  },
+  {
+    "id": 39,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Notification Logging APIs",
+    "role": "system",
+    "subtask": "BUILD NOTIFICATION LOGGING APIS: POST /api/notifications/log - log notification attempts with delivery status. GET /api/notifications/logs/{user_id} - user's notification delivery history. GET /api/admin/notifications/logs - admin view of all notification logs with filters. PUT /api/notifications/logs/{log_id}/status - update delivery status. GET /api/notifications/stats - notification delivery statistics. POST /api/notifications/retry - retry failed notification delivery. GET /api/notifications/bounce-list - manage bounced email addresses."
+  },
+  {
+    "id": 40,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Notification Logging UI",
+    "role": "system",
+    "subtask": "CREATE NOTIFICATION LOG VIEWER: Admin interface showing delivery status, timestamps, retry attempts. User interface showing notification history with read receipts."
+  },
+  {
+    "id": 41,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Multi-Clinic Doctor APIs",
+    "role": "doctor",
+    "subtask": "BUILD MULTI-CLINIC SUPPORT APIS: POST /api/doctors/{doctor_id}/clinics/{clinic_id}/association - associate doctor with clinic. GET /api/doctors/{doctor_id}/clinics - list doctor's associated clinics. PUT /api/doctors/{doctor_id}/clinics/{clinic_id}/schedule - set clinic-specific schedule. GET /api/doctors/{doctor_id}/clinics/{clinic_id}/patients - clinic-specific patient list. GET /api/doctors/{doctor_id}/clinics/{clinic_id}/appointments - clinic-specific appointments. PUT /api/doctors/{doctor_id}/active-clinic - switch active clinic context. GET /api/doctors/{doctor_id}/clinics/{clinic_id}/analytics - clinic-specific performance metrics."
+  },
+  {
+    "id": 42,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Multi-Clinic Doctor UI",
+    "role": "doctor",
+    "subtask": "CREATE CLINIC SWITCHER: Dropdown in doctor dashboard to switch between associated clinics. Separate appointment calendars and patient lists per clinic. Unified profile with clinic-specific schedules display."
+  },
+  {
+    "id": 43,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Document Generator APIs",
+    "role": "doctor, patient",
+    "subtask": "BUILD DOCUMENT GENERATION APIS: POST /api/documents/prescriptions - generate prescription PDF with {patient_id, doctor_id, medications, instructions, visit_id}. POST /api/documents/invoices - generate consultation invoice with payment details. GET /api/documents/{document_id}/download - download generated document. POST /api/documents/certificates - generate medical certificates. PUT /api/documents/{document_id}/digital-signature - apply digital signature. GET /api/documents/templates - available document templates. POST /api/documents/custom - generate custom document from template."
+  },
+  {
+    "id": 44,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Document Generator UI",
+    "role": "doctor, patient",
+    "subtask": "CREATE PRESCRIPTION TEMPLATE: Professional layout with doctor letterhead, patient details, medication list with dosage, signature area. PDF download with security watermark. CREATE INVOICE TEMPLATE: Itemized billing with consultation fees, taxes, payment method, receipt number. Branded design with clinic logo."
+  },
+  {
+    "id": 45,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Offline Mode APIs",
+    "role": "patient",
+    "subtask": "BUILD OFFLINE SUPPORT APIS: GET /api/offline/appointments - lightweight appointment data for offline access. POST /api/sms/appointment-booking - SMS-based appointment booking with keyword responses. GET /api/offline/doctors/basic - essential doctor information for offline viewing. POST /api/offline/sync - sync offline actions when connection restored. GET /api/offline/emergency-contacts - emergency contact information. POST /api/sms/reminders - SMS appointment reminders with reply options."
+  },
+  {
+    "id": 46,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Offline Mode UI",
+    "role": "patient",
+    "subtask": "CREATE LIGHTWEIGHT MOBILE VERSION: Simplified navigation, essential features only, minimal graphics. SMS booking interface with keyword responses. Offline appointment viewing with sync capability."
+  },
+  {
+    "id": 47,
+    "phase": "Phase 16: Built-in Feature",
+    "category": "Development Architecture",
+    "role": "system",
+    "subtask": "ENSURE CURSOR INTEGRATION: All API logic in separate route files with clear module separation. Business logic in service layers, not in rendering templates. RESTful API design with consistent response formats. Comprehensive API documentation with OpenAPI/Swagger. Error handling middleware with proper HTTP status codes. Request/response validation using Pydantic schemas. Database operations through repository pattern. Logging and monitoring integration ready."
+  }
+]

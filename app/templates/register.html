@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | AMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb',
+            secondary: '#10b981',
+            accent: '#f59e0b',
+            danger: '#ef4444',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+<div class="flex min-h-screen">
+  <!-- Left: Imagery/Testimonials -->
+  <div class="hidden md:flex w-1/2 bg-gradient-to-br from-primary to-secondary items-center justify-center p-12">
+    <div class="text-center">
+      <img src="/static/logo.webp" alt="Medical" class="mx-auto mb-8 w-32 h-32 rounded-full shadow-lg">
+      <h2 class="text-3xl font-bold text-white mb-4">Welcome to AMS</h2>
+      <p class="text-lg text-white/90 mb-8">Join thousands of patients and doctors improving healthcare together.</p>
+      <div class="space-y-4">
+        <blockquote class="bg-white/20 text-white italic rounded p-4 shadow">“AMS made it so easy to manage my appointments and medical records!”<br><span class="block mt-2 font-semibold">- Patient</span></blockquote>
+        <blockquote class="bg-white/20 text-white italic rounded p-4 shadow">“The professional dashboard is a game changer for my clinic.”<br><span class="block mt-2 font-semibold">- Dr. Sharma</span></blockquote>
+      </div>
+    </div>
+  </div>
+  <!-- Right: Registration Form -->
+  <div class="flex-1 flex items-center justify-center bg-white p-8">
+    <form id="registerForm" class="w-full max-w-md bg-white rounded-lg shadow-lg p-8 space-y-6" autocomplete="off">
+      <h2 class="text-2xl font-bold text-primary mb-2">Create your account</h2>
+      <div class="flex gap-4 mb-2">
+        <label class="flex-1">
+          <input type="radio" name="role" value="patient" class="peer hidden" required checked>
+          <div class="peer-checked:bg-primary peer-checked:text-white border border-primary rounded px-4 py-2 text-center cursor-pointer transition">Patient</div>
+        </label>
+        <label class="flex-1">
+          <input type="radio" name="role" value="doctor" class="peer hidden" required>
+          <div class="peer-checked:bg-primary peer-checked:text-white border border-primary rounded px-4 py-2 text-center cursor-pointer transition">Doctor</div>
+        </label>
+      </div>
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Full Name</label>
+        <input type="text" name="full_name" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" required maxlength="255">
+      </div>
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Email</label>
+        <input type="email" name="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" required maxlength="255">
+      </div>
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Phone</label>
+        <input type="tel" name="phone" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" required maxlength="20" pattern="[0-9]{10,}">
+      </div>
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Password</label>
+        <input type="password" name="password" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" required minlength="8" maxlength="255">
+        <div id="passwordStrength" class="text-xs mt-1"></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" name="terms_accepted" id="terms" required>
+        <label for="terms" class="text-gray-600 text-sm">I agree to the <a href="#" class="text-primary underline">Terms & Conditions</a></label>
+      </div>
+      <div class="flex gap-4 my-2">
+        <button type="button" id="googleLogin" class="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded px-3 py-2 hover:bg-gray-50">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5"> Google
+        </button>
+        <button type="button" id="appleLogin" class="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded px-3 py-2 hover:bg-gray-50">
+          <img src="https://www.svgrepo.com/show/452210/apple.svg" class="w-5 h-5"> Apple
+        </button>
+      </div>
+      <button type="submit" class="w-full bg-primary text-white font-semibold py-2 rounded hover:bg-primary/90 transition">Register</button>
+      <div class="text-center text-sm mt-2">Already have an account? <a href="/login" class="text-primary underline">Login</a></div>
+    </form>
+    <!-- OTP Modal -->
+    <div id="otpModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
+        <h3 class="text-xl font-bold text-primary mb-2">Verify OTP</h3>
+        <p class="mb-4 text-gray-600">Enter the 6-digit OTP sent to your email.</p>
+        <form id="otpForm" class="space-y-4">
+          <input type="text" name="otp_code" maxlength="6" pattern="[0-9]{6}" required class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary text-center text-lg tracking-widest">
+          <input type="hidden" name="user_id">
+          <input type="hidden" name="verification_type" value="register">
+          <button type="submit" class="w-full bg-primary text-white font-semibold py-2 rounded hover:bg-primary/90 transition">Verify</button>
+        </form>
+        <div class="text-center mt-2">
+          <button id="resendOtpBtn" class="text-primary underline text-sm">Resend OTP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// Password strength
+const passwordInput = document.querySelector('input[name="password"]');
+const passwordStrength = document.getElementById('passwordStrength');
+passwordInput.addEventListener('input', function() {
+  const val = passwordInput.value;
+  let strength = 0;
+  if (val.length >= 8) strength++;
+  if (/[A-Z]/.test(val)) strength++;
+  if (/[0-9]/.test(val)) strength++;
+  if (/[^A-Za-z0-9]/.test(val)) strength++;
+  let msg = '';
+  if (strength <= 1) msg = '<span class="text-danger">Weak</span>';
+  else if (strength == 2) msg = '<span class="text-accent">Medium</span>';
+  else msg = '<span class="text-secondary">Strong</span>';
+  passwordStrength.innerHTML = msg;
+});
+// Register form submit
+const registerForm = document.getElementById('registerForm');
+registerForm.onsubmit = function(e) {
+  e.preventDefault();
+  let valid = true;
+  registerForm.querySelectorAll('input[required]').forEach(function(input) {
+    if (!input.value) {
+      input.classList.add('border-danger');
+      valid = false;
+    } else {
+      input.classList.remove('border-danger');
+    }
+  });
+  if (!valid) return;
+  const data = Object.fromEntries(new FormData(registerForm));
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/auth/register', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        const resp = JSON.parse(xhr.responseText);
+        if (resp.verification_required) {
+          document.querySelector('#otpForm input[name="user_id"]').value = resp.user_id;
+          document.getElementById('otpModal').classList.remove('hidden');
+        }
+      } else {
+        alert('Registration failed: ' + xhr.responseText);
+      }
+    }
+  };
+  xhr.send(JSON.stringify(data));
+};
+// OTP form submit
+const otpForm = document.getElementById('otpForm');
+otpForm.onsubmit = function(e) {
+  e.preventDefault();
+  let valid = true;
+  otpForm.querySelectorAll('input[required]').forEach(function(input) {
+    if (!input.value) {
+      input.classList.add('border-danger');
+      valid = false;
+    } else {
+      input.classList.remove('border-danger');
+    }
+  });
+  if (!valid) return;
+  const data = Object.fromEntries(new FormData(otpForm));
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/auth/verify-otp', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        alert('Registration complete! Redirecting to login...');
+        window.location.href = '/login';
+      } else {
+        alert('OTP verification failed: ' + xhr.responseText);
+      }
+    }
+  };
+  xhr.send(JSON.stringify(data));
+};
+// Resend OTP (calls register again with same data)
+document.getElementById('resendOtpBtn').onclick = function() {
+  const data = Object.fromEntries(new FormData(registerForm));
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/auth/register', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        alert('OTP resent!');
+      } else {
+        alert('Failed to resend OTP: ' + xhr.responseText);
+      }
+    }
+  };
+  xhr.send(JSON.stringify(data));
+};
+// Social login (placeholders)
+document.getElementById('googleLogin').onclick = function() {
+  alert('Google login not implemented.');
+};
+document.getElementById('appleLogin').onclick = function() {
+  alert('Apple login not implemented.');
+};
+</script>
+</body>
+</html>

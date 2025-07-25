@@ -1,0 +1,261 @@
+-- First, insert the core roles into the roles table
+INSERT INTO roles (id, name, description, permissions) VALUES
+(
+  gen_random_uuid(),
+  'patient',
+  'Patients who can book appointments, consult with doctors, and manage their health records',
+  '{
+    "appointments": ["create", "read", "update", "cancel"],
+    "medical_records": ["read", "upload", "share"],
+    "payments": ["create", "read"],
+    "chat": ["create", "read"],
+    "telemedicine": ["join", "participate"],
+    "feedback": ["create", "read"],
+    "profile": ["read", "update"],
+    "ai_assistant": ["use"],
+    "pharmacy": ["order", "track"],
+    "lab_bookings": ["create", "read", "track"]
+  }'
+),
+(
+  gen_random_uuid(),
+  'doctor',
+  'Medical practitioners who provide consultations and manage patient care',
+  '{
+    "appointments": ["read", "update", "confirm", "complete"],
+    "medical_records": ["read", "create", "update"],
+    "prescriptions": ["create", "read", "update"],
+    "chat": ["create", "read"],
+    "telemedicine": ["create", "join", "manage"],
+    "patients": ["read", "search"],
+    "schedule": ["read", "update"],
+    "profile": ["read", "update"],
+    "consultation_notes": ["create", "read", "update"],
+    "lab_reports": ["read", "create"],
+    "feedback": ["read"]
+  }'
+),
+(
+  gen_random_uuid(),
+  'clinic_admin',
+  'Administrators who manage clinic operations, doctors, and appointments',
+  '{
+    "clinic": ["read", "update", "manage"],
+    "doctors": ["read", "assign", "manage"],
+    "appointments": ["read", "manage", "reschedule"],
+    "schedule": ["read", "update", "manage"],
+    "patients": ["read", "search"],
+    "analytics": ["read"],
+    "staff": ["manage"],
+    "services": ["manage"],
+    "profile": ["read", "update"],
+    "reports": ["generate", "read"]
+  }'
+),
+(
+  gen_random_uuid(),
+  'sys_admin',
+  'System administrators with full access to manage the entire platform',
+  '{
+    "users": ["create", "read", "update", "delete", "suspend"],
+    "doctors": ["verify", "manage", "approve"],
+    "clinics": ["approve", "manage", "verify"],
+    "appointments": ["read", "manage", "override"],
+    "payments": ["read", "manage", "refund"],
+    "analytics": ["read", "export"],
+    "system": ["configure", "maintain"],
+    "notifications": ["manage", "broadcast"],
+    "content": ["manage", "moderate"],
+    "feedback": ["moderate", "manage"],
+    "reports": ["generate", "read", "export"],
+    "audit": ["read", "manage"],
+    "backup": ["create", "restore"]
+  }'
+);
+
+-- Insert some sample users for demonstration (you would typically not do this in production)
+-- These are examples - in real implementation, users would register through your application
+
+-- Sample System Admin
+INSERT INTO users (id, email, phone, password_hash, full_name, is_active, is_verified) VALUES
+(
+  '550e8400-e29b-41d4-a716-446655440001',
+  'admin@healthplatform.com',
+  '+1234567890',
+  '$2b$12$LQv3c1yqBTLhL5n7HdnTGuj/4aw7TW2zF8ql3KGq8QHwFU7D9cjIK', -- hashed password
+  'System Administrator',
+  true,
+  true
+);
+
+-- Sample Doctor
+INSERT INTO users (id, email, phone, password_hash, full_name, date_of_birth, gender, is_active, is_verified) VALUES
+(
+  '550e8400-e29b-41d4-a716-446655440002',
+  'dr.smith@healthplatform.com',
+  '+1234567891',
+  '$2b$12$LQv3c1yqBTLhL5n7HdnTGuj/4aw7TW2zF8ql3KGq8QHwFU7D9cjIK',
+  'Dr. John Smith',
+  '1980-05-15',
+  'Male',
+  true,
+  true
+);
+
+-- Sample Clinic Admin
+INSERT INTO users (id, email, phone, password_hash, full_name, date_of_birth, gender, is_active, is_verified) VALUES
+(
+  '550e8400-e29b-41d4-a716-446655440003',
+  'clinic.admin@healthcenter.com',
+  '+1234567892',
+  '$2b$12$LQv3c1yqBTLhL5n7HdnTGuj/4aw7TW2zF8ql3KGq8QHwFU7D9cjIK',
+  'Jane Clinic Admin',
+  '1985-08-20',
+  'Female',
+  true,
+  true
+);
+
+-- Sample Patient
+INSERT INTO users (id, email, phone, password_hash, full_name, date_of_birth, gender, is_active, is_verified) VALUES
+(
+  '550e8400-e29b-41d4-a716-446655440004',
+  'patient@email.com',
+  '+1234567893',
+  '$2b$12$LQv3c1yqBTLhL5n7HdnTGuj/4aw7TW2zF8ql3KGq8QHwFU7D9cjIK',
+  'John Patient',
+  '1990-03-10',
+  'Male',
+  true,
+  true
+);
+
+-- Now assign roles to users
+-- Get role IDs first (you'll need to replace these with actual UUIDs from your roles table)
+-- System Admin Role Assignment
+INSERT INTO user_roles (user_id, role_id, assigned_at, assigned_by)
+SELECT 
+  '550e8400-e29b-41d4-a716-446655440001',
+  r.id,
+  CURRENT_TIMESTAMP,
+  NULL
+FROM roles r WHERE r.name = 'sys_admin';
+
+-- Doctor Role Assignment
+INSERT INTO user_roles (user_id, role_id, assigned_at, assigned_by)
+SELECT 
+  '550e8400-e29b-41d4-a716-446655440002',
+  r.id,
+  CURRENT_TIMESTAMP,
+  '550e8400-e29b-41d4-a716-446655440001' -- assigned by system admin
+FROM roles r WHERE r.name = 'doctor';
+
+-- Clinic Admin Role Assignment
+INSERT INTO user_roles (user_id, role_id, assigned_at, assigned_by)
+SELECT 
+  '550e8400-e29b-41d4-a716-446655440003',
+  r.id,
+  CURRENT_TIMESTAMP,
+  '550e8400-e29b-41d4-a716-446655440001' -- assigned by system admin
+FROM roles r WHERE r.name = 'clinic_admin';
+
+-- Patient Role Assignment
+INSERT INTO user_roles (user_id, role_id, assigned_at, assigned_by)
+SELECT 
+  '550e8400-e29b-41d4-a716-446655440004',
+  r.id,
+  CURRENT_TIMESTAMP,
+  NULL -- self-registered
+FROM roles r WHERE r.name = 'patient';
+
+-- Create corresponding profile records for each user type
+
+-- Doctor Profile
+INSERT INTO doctor_profiles (id, user_id, medical_license_number, years_experience, bio, consultation_fee, telemedicine_enabled, is_verified, specialization_primary) VALUES
+(
+  gen_random_uuid(),
+  '550e8400-e29b-41d4-a716-446655440002',
+  'MD123456789',
+  15,
+  'Experienced cardiologist with expertise in preventive cardiology and heart disease management.',
+  150.00,
+  true,
+  true,
+  'Cardiology'
+);
+
+-- Patient Profile
+INSERT INTO patient_profiles (id, user_id, emergency_contact_name, emergency_contact_phone, blood_group, preferred_language) VALUES
+(
+  gen_random_uuid(),
+  '550e8400-e29b-41d4-a716-446655440004',
+  'Emergency Contact',
+  '+1234567894',
+  'O+',
+  'en'
+);
+
+-- Verify the role assignments
+SELECT 
+  u.full_name,
+  u.email,
+  r.name as role_name,
+  ur.assigned_at
+FROM users u
+JOIN user_roles ur ON u.id = ur.user_id
+JOIN roles r ON ur.role_id = r.id
+ORDER BY u.full_name;
+
+-- Additional sample data for testing different role combinations
+-- Some users might have multiple roles (e.g., a doctor who is also a clinic admin)
+
+-- Insert a doctor who is also a clinic admin
+INSERT INTO users (id, email, phone, password_hash, full_name, date_of_birth, gender, is_active, is_verified) VALUES
+(
+  '550e8400-e29b-41d4-a716-446655440005',
+  'dr.admin@clinic.com',
+  '+1234567895',
+  '$2b$12$LQv3c1yqBTLhL5n7HdnTGuj/4aw7TW2zF8ql3KGq8QHwFU7D9cjIK',
+  'Dr. Admin Multi Role',
+  '1975-12-01',
+  'Female',
+  true,
+  true
+);
+
+-- Assign both doctor and clinic_admin roles
+INSERT INTO user_roles (user_id, role_id, assigned_at, assigned_by)
+SELECT 
+  '550e8400-e29b-41d4-a716-446655440005',
+  r.id,
+  CURRENT_TIMESTAMP,
+  '550e8400-e29b-41d4-a716-446655440001'
+FROM roles r WHERE r.name IN ('doctor', 'clinic_admin');
+
+-- Create profiles for the multi-role user
+INSERT INTO doctor_profiles (id, user_id, medical_license_number, years_experience, bio, consultation_fee, telemedicine_enabled, is_verified, specialization_primary) VALUES
+(
+  gen_random_uuid(),
+  '550e8400-e29b-41d4-a716-446655440005',
+  'MD987654321',
+  20,
+  'Senior physician and clinic administrator with expertise in internal medicine.',
+  200.00,
+  true,
+  true,
+  'Internal Medicine'
+);
+
+-- Note: clinic_admin_profile will be created when the user is assigned to a specific clinic
+
+-- Query to show all role assignments including multi-role users
+SELECT 
+  u.full_name,
+  u.email,
+  STRING_AGG(r.name, ', ') as roles,
+  COUNT(r.name) as role_count
+FROM users u
+JOIN user_roles ur ON u.id = ur.user_id
+JOIN roles r ON ur.role_id = r.id
+GROUP BY u.id, u.full_name, u.email
+ORDER BY u.full_name;

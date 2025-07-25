@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+{% block body %}
+{% set role = '' %}
+{% set profile_data = {} %}
+<script>
+let accessToken = localStorage.getItem('access_token');
+if (!accessToken) { alert('Not logged in!'); window.location.href = '/login'; }
+fetch(`/api/profile/me`, {
+  headers: { 'Authorization': 'Bearer ' + accessToken }
+})
+  .then(r => r.json())
+  .then(data => {
+    window.profileData = data;
+    window.role = data.role;
+    renderProfile(data);
+  });
+function renderProfile(data) {
+  const main = document.getElementById('profileMain');
+  main.innerHTML = '';
+  let logoutBtn = `<button id='logoutBtn' class='ml-4 bg-danger text-white px-4 py-2 rounded font-semibold hover:bg-danger/90 float-right'>Logout</button>`;
+  if (data.role === 'patient' || data.role === 'doctor') {
+    // Prepare values for patient/doctor
+    let patientProfile = data.patient_profile || {};
+    let doctorProfile = data.doctor_profile || {};
+    let medicalHistory = data.medical_history || [];
+    let specialties = data.specialties || [];
+    main.innerHTML = `
+      <div class="flex items-center gap-6 mb-6">
+        <div class="relative">
+          <img id="profilePic" src="${data.profile_picture || '/static/user.webp'}" alt="Profile" class="w-24 h-24 rounded-full border-4 border-primary object-cover">
+          <button id="uploadBtn" class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow hover:bg-primary/90">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12"/></svg>
+          </button>
+          <input type="file" id="avatarInput" accept="image/*" class="hidden">
+        </div>
+        <div>
+          <h2 id="profileName" class="text-2xl font-bold text-primary mb-1">${data.full_name}</h2>
+          <div id="profileRole" class="text-gray-500">${data.role}</div>
+        </div>
+        <div class="ml-auto flex gap-2">
+          <button id="saveBtn" class="bg-secondary text-white px-4 py-2 rounded font-semibold hover:bg-secondary/90">Save</button>
+          <button id="cancelBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-300">Cancel</button>
+          ${logoutBtn}
+        </div>
+      </div>
+      <div class="border-b mb-6">
+        <nav class="flex gap-6" id="profileTabs">
+          <button class="py-2 px-4 text-primary border-b-2 border-primary font-semibold" data-tab="personal">Personal Info</button>
+          <button class="py-2 px-4 text-gray-600 hover:text-primary" data-tab="medical">Medical History</button>
+          <button class="py-2 px-4 text-gray-600 hover:text-primary" data-tab="professional">Professional Info</button>
+          <button class="py-2 px-4 text-gray-600 hover:text-primary" data-tab="security">Security Settings</button>
+        </nav>
+      </div>
+      <div id="tabContent">
+        <form id="personalForm" class="space-y-4" data-tab="personal">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 font-medium mb-1">Full Name</label>
+              <input type="text" name="full_name" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" required value="${data.full_name}">
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-1">Phone</label>
+              <input type="tel" name="phone" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" required value="${data.phone}">
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-1">Date of Birth</label>
+              <input type="date" name="date_of_birth" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" value="${data.date_of_birth || ''}">
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-1">Gender</label>
+              <select name="gender" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">Select</option>
+                <option value="male" ${data.gender === 'male' ? 'selected' : ''}>Male</option>
+                <option value="female" ${data.gender === 'female' ? 'selected' : ''}>Female</option>
+                <option value="other" ${data.gender === 'other' ? 'selected' : ''}>Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-1">Language</label>
+              <input type="text" name="language_preference" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" value="${data.language_preference || ''}">
+            </div>
+          </div>
+        </form>
+        <form id="medicalForm" class="space-y-4 hidden" data-tab="medical">
+          <div id="medicalHistoryList">
+            ${(medicalHistory.length === 0) ? '<div class="text-gray-400">No medical history records.</div>' : ''}
+            <table class="min-w-full text-sm border">
+              <thead>
+                <tr class="bg-gray-100">
+                  <th class="px-2 py-1 border">Condition</th>
+                  <th class="px-2 py-1 border">Diagnosed Date</th>
+                  <th class="px-2 py-1 border">Status</th>
+                  <th class="px-2 py-1 border">Treatment</th>
+                  <th class="px-2 py-1 border">Notes</th>
+                  <th class="px-2 py-1 border">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${medicalHistory.map((item, i) => `
+                  <tr>
+                    <td class="border"><input type="text" class="mhCondition px-2 py-1 w-full" data-index="${i}" value="${item.condition || ''}"></td>
+                    <td class="border"><input type="date" class="mhDiagnosed px-2 py-1 w-full" data-index="${i}" value="${item.diagnosed_date || ''}"></td>
+                    <td class="border"><input type="text" class="mhStatus px-2 py-1 w-full" data-index="${i}" value="${item.status || ''}"></td>
+                    <td class="border"><input type="text" class="mhTreatment px-2 py-1 w-full" data-index="${i}" value="${item.treatment || ''}"></td>
+                    <td class="border"><input type="text" class="mhNotes px-2 py-1 w-full" data-index="${i}" value="${item.notes || ''}"></td>
+                    <td class="border text-center">
+                      <button type="button" class="removeMHBtn text-danger" data-index="${i}">Delete</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" id="addMedicalBtn" class="bg-primary text-white px-4 py-2 rounded font-semibold hover:bg-primary/90">Add Medical History</button>
+        </form>
+        <form id="professionalForm" class="space-y-4 hidden" data-tab="professional">
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Medical License Number</label>
+            <input type="text" name="medical_license_number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" value="${doctorProfile.medical_license_number || ''}">
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">License Expiry</label>
+            <input type="date" name="license_expiry" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" value="${doctorProfile.license_expiry || ''}">
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Years Experience</label>
+            <input type="number" name="years_experience" min="0" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" value="${doctorProfile.years_experience || ''}">
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Bio</label>
+            <textarea name="bio" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary">${doctorProfile.bio || ''}</textarea>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Consultation Fee</label>
+            <input type="number" name="consultation_fee" min="0" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" value="${doctorProfile.consultation_fee || ''}">
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Telemedicine Enabled</label>
+            <input type="checkbox" name="telemedicine_enabled" class="ml-2" ${doctorProfile.telemedicine_enabled ? 'checked' : ''}>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Specialization</label>
+            <input type="text" name="specialization_primary" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" value="${doctorProfile.specialization_primary || ''}">
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Specialties</label>
+            <div class="flex gap-2 mb-2">
+              <select id="specialtyDropdown" class="flex-1 px-2 py-1 border rounded">
+                <option value="">Select specialty</option>
+              </select>
+              <button type="button" id="addSpecialtyBtn" class="bg-primary text-white px-3 py-1 rounded">Add</button>
+            </div>
+            <div class="flex gap-2 mb-2">
+              <input type="text" id="customSpecialtyInput" placeholder="Add custom specialty name" class="flex-1 px-2 py-1 border rounded">
+              <input type="text" id="customSpecialtyDesc" placeholder="Description" class="flex-1 px-2 py-1 border rounded">
+              <input type="text" id="customSpecialtyCat" placeholder="Category" class="flex-1 px-2 py-1 border rounded">
+              <input type="checkbox" id="customSpecialtyPrimary"> <label for="customSpecialtyPrimary">Primary</label>
+              <input type="date" id="customSpecialtyCertDate" class="px-2 py-1 border rounded" placeholder="Certification Date">
+              <button type="button" id="addCustomSpecialtyBtn" class="bg-accent text-white px-3 py-1 rounded">Add Custom</button>
+            </div>
+            <div id="specialtiesList">
+              ${(specialties.length === 0) ? '<div class="text-gray-400">No specialties.</div>' : ''}
+              ${specialties.map((s, i) => `<div class='border rounded p-2 mb-1 flex flex-col md:flex-row md:items-center md:justify-between gap-2'>
+                <span>Name: ${s.name || ''} ${s.is_primary ? '(Primary)' : ''}</span>
+                <span>Description: <input type='text' class='specialtyDescInput px-2 py-1 border rounded' data-index='${i}' value='${s.description || ''}'></span>
+                <span>Category: <input type='text' class='specialtyCatInput px-2 py-1 border rounded' data-index='${i}' value='${s.category || ''}'></span>
+                <span>Primary: <input type='checkbox' class='specialtyPrimaryInput' data-index='${i}' ${s.is_primary ? 'checked' : ''}></span>
+                <span>Cert Date: <input type='date' class='specialtyCertDateInput px-2 py-1 border rounded' data-index='${i}' value='${s.certification_date || ''}'></span>
+                <button type='button' class='removeSpecialtyBtn text-danger' data-index='${i}'>Remove</button>
+              </div>`).join('')}
+            </div>
+          </div>
+        </form>
+        <form id="securityForm" class="space-y-4 hidden" data-tab="security">
+          <div>
+            <label class="block text-gray-700 font-medium mb-1">Change Password</label>
+            <input type="password" name="new_password" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary">
+          </div>
+          <button type="button" class="bg-primary text-white px-4 py-2 rounded font-semibold hover:bg-primary/90">Update Password</button>
+        </form>
+      </div>
+      <div id="unsavedModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
+          <h3 class="text-xl font-bold text-primary mb-2">Unsaved Changes</h3>
+          <p class="mb-4 text-gray-600">You have unsaved changes. Are you sure you want to leave?</p>
+          <div class="flex gap-4 justify-end">
+            <button id="discardBtn" class="bg-danger text-white px-4 py-2 rounded">Discard</button>
+            <button id="stayBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded">Stay</button>
+          </div>
+        </div>
+      </div>
+    `;
+    setTimeout(() => {
+      const tabs = document.querySelectorAll('#profileTabs button');
+      const forms = document.querySelectorAll('#tabContent form');
+      tabs.forEach(tab => {
+        tab.onclick = function() {
+          tabs.forEach(t => t.classList.remove('text-primary', 'border-b-2', 'border-primary', 'font-semibold'));
+          tab.classList.add('text-primary', 'border-b-2', 'border-primary', 'font-semibold');
+          forms.forEach(f => f.classList.add('hidden'));
+          document.querySelector(`#tabContent form[data-tab="${tab.dataset.tab}"]`).classList.remove('hidden');
+        };
+      });
+      let unsaved = false;
+      document.querySelectorAll('#tabContent input, #tabContent textarea, #tabContent select').forEach(el => {
+        el.oninput = () => { unsaved = true; };
+      });
+      document.getElementById('saveBtn').onclick = function() {
+        // Gather all form data
+        const pf = document.getElementById('personalForm');
+        const dataToSend = {
+          full_name: pf.full_name.value,
+          phone: pf.phone.value,
+          date_of_birth: pf.date_of_birth.value,
+          gender: pf.gender.value,
+          language_preference: pf.language_preference.value
+        };
+        if (window.role === 'patient') {
+          // Patient profile fields
+          dataToSend.patient_profile = {};
+          // Add patient profile fields if present in DOM
+          // (You can add more fields as needed)
+          // Medical history
+          dataToSend.medical_history = window.profileData.medical_history || [];
+        }
+        if (window.role === 'doctor') {
+          // Doctor profile fields
+          const df = document.getElementById('professionalForm');
+          dataToSend.doctor_profile = {
+            medical_license_number: df.medical_license_number.value,
+            license_expiry: df.license_expiry.value,
+            years_experience: df.years_experience.value,
+            bio: df.bio.value,
+            consultation_fee: df.consultation_fee.value,
+            telemedicine_enabled: df.telemedicine_enabled.checked,
+            specialization_primary: df.specialization_primary.value
+          };
+          // Specialties (not editable in this UI, but you can add logic)
+          dataToSend.specialties = window.profileData.specialties || [];
+        }
+        fetch(`/api/profile/update`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+          body: JSON.stringify(dataToSend)
+        }).then(r => r.json()).then(resp => {
+          alert('Profile updated!');
+          unsaved = false;
+          location.reload();
+        });
+      };
+      document.getElementById('cancelBtn').onclick = function() {
+        if (unsaved) {
+          window.showModal('unsavedModal');
+        } else {
+          location.reload();
+        }
+      };
+      document.getElementById('discardBtn').onclick = function() {
+        unsaved = false;
+        window.hideModal('unsavedModal');
+        location.reload();
+      };
+      document.getElementById('stayBtn').onclick = function() {
+        window.hideModal('unsavedModal');
+      };
+      // Profile picture upload
+      const uploadBtn = document.getElementById('uploadBtn');
+      const avatarInput = document.getElementById('avatarInput');
+      uploadBtn.onclick = function() { avatarInput.click(); };
+      avatarInput.onchange = function() {
+        if (!avatarInput.files.length) return;
+        const formData = new FormData();
+        formData.append('file', avatarInput.files[0]);
+        fetch(`/api/profile/upload-avatar`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + accessToken },
+          body: formData
+        }).then(r => r.json()).then(resp => {
+          document.getElementById('profilePic').src = resp.profile_picture;
+          unsaved = false;
+        });
+      };
+      // Add medical history (for patient)
+      if (window.role === 'patient') {
+        document.querySelector('button[data-tab="medical"]').classList.remove('hidden');
+        document.getElementById('addMedicalBtn').onclick = function() {
+          window.profileData.medical_history = window.profileData.medical_history || [];
+          window.profileData.medical_history.push({ condition: '', diagnosed_date: '', status: '', treatment: '', notes: '' });
+          renderProfile(window.profileData);
+        };
+        // Remove medical history
+        document.querySelectorAll('.removeMHBtn').forEach(btn => {
+          btn.onclick = function() {
+            const idx = parseInt(btn.getAttribute('data-index'));
+            window.profileData.medical_history.splice(idx, 1);
+            renderProfile(window.profileData);
+          };
+        });
+        // Update fields in local array
+        document.querySelectorAll('.mhCondition').forEach(input => {
+          input.oninput = function() {
+            const idx = parseInt(input.getAttribute('data-index'));
+            window.profileData.medical_history[idx].condition = input.value;
+          };
+        });
+        document.querySelectorAll('.mhDiagnosed').forEach(input => {
+          input.oninput = function() {
+            const idx = parseInt(input.getAttribute('data-index'));
+            window.profileData.medical_history[idx].diagnosed_date = input.value;
+          };
+        });
+        document.querySelectorAll('.mhStatus').forEach(input => {
+          input.oninput = function() {
+            const idx = parseInt(input.getAttribute('data-index'));
+            window.profileData.medical_history[idx].status = input.value;
+          };
+        });
+        document.querySelectorAll('.mhTreatment').forEach(input => {
+          input.oninput = function() {
+            const idx = parseInt(input.getAttribute('data-index'));
+            window.profileData.medical_history[idx].treatment = input.value;
+          };
+        });
+        document.querySelectorAll('.mhNotes').forEach(input => {
+          input.oninput = function() {
+            const idx = parseInt(input.getAttribute('data-index'));
+            window.profileData.medical_history[idx].notes = input.value;
+          };
+        });
+      } else {
+        document.querySelector('button[data-tab="medical"]').classList.add('hidden');
+      }
+      // Show/hide professional tab for doctor
+      if (window.role === 'doctor') {
+        document.querySelector('button[data-tab="professional"]').classList.remove('hidden');
+      } else {
+        document.querySelector('button[data-tab="professional"]').classList.add('hidden');
+      }
+    }, 100);
+  } else if (data.role === 'clinic_admin' || data.role === 'sys_admin') {
+    main.innerHTML = `
+      <div class="flex flex-col items-center justify-center min-h-[60vh]">
+        <img src="${data.profile_picture || '/static/user.webp'}" alt="Profile" class="w-24 h-24 rounded-full border-4 border-primary object-cover mb-4">
+        <h2 class="text-2xl font-bold text-primary mb-2">${data.full_name}</h2>
+        <div class="text-gray-500 mb-4">${data.role.replace('_', ' ').toUpperCase()}</div>
+        <div class="mb-4">${data.message || ''}</div>
+        <a href="${data.dashboard_link}" class="bg-primary text-white px-6 py-2 rounded font-semibold hover:bg-primary/90">Go to Dashboard</a>
+        ${logoutBtn}
+      </div>
+    `;
+  } else {
+    main.innerHTML = `<div class="text-center text-danger font-bold">Unknown role or insufficient permissions.</div>${logoutBtn}`;
+  }
+  // Attach logout logic
+  setTimeout(() => {
+    const btn = document.getElementById('logoutBtn');
+    if (btn) {
+      btn.onclick = function() {
+        const token = localStorage.getItem('access_token');
+        if (!token) { localStorage.clear(); window.location.href = '/login'; return; }
+        fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(r => r.json())
+        .then(() => {
+          localStorage.clear();
+          window.location.href = '/login';
+        })
+        .catch(() => {
+          localStorage.clear();
+          window.location.href = '/login';
+        });
+      };
+    }
+  }, 100);
+  if (window.role === 'doctor') {
+    // Fetch specialties for dropdown
+    fetch('/api/profile/specialties', { headers: { 'Authorization': 'Bearer ' + accessToken } })
+      .then(r => r.json())
+      .then(list => {
+        const dropdown = document.getElementById('specialtyDropdown');
+        dropdown.innerHTML = '<option value="">Select specialty</option>' +
+          list.map(s => `<option value="${s.id}" data-description="${s.description || ''}" data-category="${s.category || ''}">${s.name}</option>`).join('');
+        // Auto-populate description/category on select
+        dropdown.onchange = function() {
+          const selected = dropdown.options[dropdown.selectedIndex];
+          document.getElementById('customSpecialtyInput').value = selected.text === 'Select specialty' ? '' : selected.text;
+          document.getElementById('customSpecialtyDesc').value = selected.getAttribute('data-description') || '';
+          document.getElementById('customSpecialtyCat').value = selected.getAttribute('data-category') || '';
+        };
+      });
+    // Add specialty from dropdown
+    document.getElementById('addSpecialtyBtn').onclick = function() {
+      const dropdown = document.getElementById('specialtyDropdown');
+      const val = dropdown.value;
+      const text = dropdown.options[dropdown.selectedIndex].text;
+      const desc = dropdown.options[dropdown.selectedIndex].getAttribute('data-description') || '';
+      const cat = dropdown.options[dropdown.selectedIndex].getAttribute('data-category') || '';
+      const is_primary = document.getElementById('customSpecialtyPrimary').checked;
+      const certification_date = document.getElementById('customSpecialtyCertDate').value;
+      if (!val) return alert('Select a specialty');
+      if ((window.profileData.specialties || []).some(s => s.specialty_id === val)) return alert('Already added');
+      window.profileData.specialties = window.profileData.specialties || [];
+      window.profileData.specialties.push({ specialty_id: val, name: text, description: desc, category: cat, is_primary: is_primary, certification_date: certification_date });
+      renderProfile(window.profileData);
+    };
+    // Add custom specialty (just add to local array, not API)
+    document.getElementById('addCustomSpecialtyBtn').onclick = function() {
+      const input = document.getElementById('customSpecialtyInput');
+      const desc = document.getElementById('customSpecialtyDesc');
+      const cat = document.getElementById('customSpecialtyCat');
+      const is_primary = document.getElementById('customSpecialtyPrimary').checked;
+      const certification_date = document.getElementById('customSpecialtyCertDate').value;
+      const name = input.value.trim();
+      const description = desc.value.trim();
+      const category = cat.value.trim();
+      if (!name) return alert('Enter a specialty name');
+      if ((window.profileData.specialties || []).some(sp => (sp.name || '').toLowerCase() === name.toLowerCase())) return alert('Already added');
+      window.profileData.specialties = window.profileData.specialties || [];
+      window.profileData.specialties.push({ name: name, description: description, category: category, is_primary: is_primary, certification_date: certification_date });
+      renderProfile(window.profileData);
+    };
+    // Remove specialty
+    document.querySelectorAll('.removeSpecialtyBtn').forEach(btn => {
+      btn.onclick = function() {
+        const idx = parseInt(btn.getAttribute('data-index'));
+        window.profileData.specialties.splice(idx, 1);
+        renderProfile(window.profileData);
+      };
+    });
+    // Update specialty fields in local array
+    document.querySelectorAll('.specialtyDescInput').forEach(input => {
+      input.oninput = function() {
+        const idx = parseInt(input.getAttribute('data-index'));
+        window.profileData.specialties[idx].description = input.value;
+      };
+    });
+    document.querySelectorAll('.specialtyCatInput').forEach(input => {
+      input.oninput = function() {
+        const idx = parseInt(input.getAttribute('data-index'));
+        window.profileData.specialties[idx].category = input.value;
+      };
+    });
+    document.querySelectorAll('.specialtyPrimaryInput').forEach(input => {
+      input.onchange = function() {
+        const idx = parseInt(input.getAttribute('data-index'));
+        window.profileData.specialties[idx].is_primary = input.checked;
+      };
+    });
+    document.querySelectorAll('.specialtyCertDateInput').forEach(input => {
+      input.oninput = function() {
+        const idx = parseInt(input.getAttribute('data-index'));
+        window.profileData.specialties[idx].certification_date = input.value;
+      };
+    });
+  }
+}
+</script>
+<div id="profileMain" class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8 mt-8"></div>
+{% endblock %}
