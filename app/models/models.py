@@ -874,6 +874,8 @@ class AppointmentSlots(Base):
     is_available: Mapped[Optional[bool]] = mapped_column(Boolean, server_default=text('true'))
     is_blocked: Mapped[Optional[bool]] = mapped_column(Boolean, server_default=text('false'))
     blocked_reason: Mapped[Optional[str]] = mapped_column(Text)
+    created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
+    updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
 
     clinic: Mapped[Optional['Clinics']] = relationship('Clinics', back_populates='appointment_slots')
     doctor: Mapped[Optional['DoctorProfiles']] = relationship('DoctorProfiles', back_populates='appointment_slots')

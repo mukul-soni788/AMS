@@ -8,6 +8,7 @@ import datetime
 import shutil
 import os
 from passlib.context import CryptContext
+from jinja2 import Template
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -117,6 +118,60 @@ def get_profile(user_id: UUID = Depends(get_current_user_id), db: Session = Depe
                 }
                 for ds, s in specialties
             ]
+    elif role_name == "clinic_admin":
+        clinic_admin_profile = db.query(models.ClinicAdminProfiles).filter(models.ClinicAdminProfiles.user_id == user.id).first()
+        if clinic_admin_profile:
+            response["clinic_admin_profile"] = {
+                "clinic_id": str(clinic_admin_profile.clinic_id),
+                "admin_level": clinic_admin_profile.admin_level,
+                "permissions": clinic_admin_profile.permissions
+            }
+        clinic = db.query(models.Clinics).filter(models.Clinics.id == clinic_admin_profile.clinic_id).first()
+        if clinic:
+            response["clinic"] = {
+                "name": clinic.name,
+                "address": clinic.address,
+                "phone": clinic.phone,
+                "email": clinic.email,
+                "website": clinic.website,
+                "license_number": clinic.license_number,
+                "operating_hours": clinic.operating_hours,
+                "created_at": clinic.created_at,
+                "updated_at": clinic.updated_at,
+                "location": clinic.location,
+                "latitude": clinic.latitude,
+                "longitude": clinic.longitude,
+                "postal_code": clinic.postal_code,
+                "city": clinic.city,
+                "state": clinic.state,
+                "country": clinic.country,
+                "is_active": clinic.is_active,
+            }
+        clinic_services = db.query(models.ClinicServices).filter(models.ClinicServices.clinic_id == clinic.id).all()
+        response["clinic_services"] = [
+            {
+                "id": str(service.id),
+                "name": service.service_name
+            }
+            for service in clinic_services
+        ]
+        clinic_doctors = db.query(models.ClinicDoctors).filter(models.ClinicDoctors.clinic_id == clinic.id).all()
+        doctor_profiles = db.query(models.DoctorProfiles).filter(models.DoctorProfiles.id.in_(clinic_doctors)).all()
+        response["clinic_doctors"] = [
+            {
+                "id": str(doctor.id),
+                "name": doctor.full_name
+            }
+            for doctor in doctor_profiles
+        ]
+        clinic_image = db.query(models.ClinicImages).filter(models.ClinicImages.clinic_id == clinic.id).all()
+        response["clinic_images"] = [
+            {
+                "id": str(image.id),
+                "image": image.image_url
+            }
+            for image in clinic_image
+        ]
     return response
 
 # --- UPDATE PROFILE ---
@@ -194,6 +249,19 @@ def update_profile(data: dict = Body(...), user_id: UUID = Depends(get_current_u
                         certification_date=s.get("certification_date"),
                     )
                     db.add(specialty)
+    
+    if role_name == "clinic_admin":
+        clinic_admin_profile = db.query(models.ClinicAdminProfiles).filter(models.ClinicAdminProfiles.user_id == user.id).first()
+        if clinic_admin_profile:
+            for field in ["admin_level"]:
+                if field in data["clinic_admin_profile"]:
+                    setattr(clinic_admin_profile, field, data["clinic_admin_profile"][field])
+        clinic = db.query(models.Clinics).filter(models.Clinics.id == clinic_admin_profile.clinic_id).first()
+        if clinic:
+            for field in ["name", "address", "phone", "email", "website", "license_number", "operating_hours", "is_active", "location", "latitude", "longitude", "postal_code", "city", "state", "country"]:
+                if field in data["clinic"]:
+                    setattr(clinic, field, data["clinic"][field])
+                    db.commit()
     user.updated_at = datetime.datetime.utcnow()
     db.commit()
     return {"message": "Profile updated successfully"}

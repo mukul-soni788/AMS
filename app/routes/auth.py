@@ -109,8 +109,18 @@ def register_user(data: dict = Body(...), db: Session = Depends(get_db)):
             db.add(doctor_profile)
             db.commit()
         elif role == "clinic_admin":
-            clinic_admin_profile = models.ClinicAdminProfiles(user_id=user.id)
-            db.add(clinic_admin_profile)
+            add_clinic = models.Clinics(
+                id=uuid.uuid4(),
+                name=data["clinic_name"],
+                address=data["clinic_address"],
+                phone=data["phone"],
+                email=data["email"],
+                created_at=datetime.datetime.utcnow(),
+                updated_at=datetime.datetime.utcnow(),
+            )
+            db.add(add_clinic)
+            update_clinic_id = models.ClinicAdminProfiles(clinic_id=add_clinic.id, user_id=user.id)
+            db.add(update_clinic_id)
             db.commit()
         # Generate OTP for verification
         otp_code = str(secrets.randbelow(1000000)).zfill(6)
